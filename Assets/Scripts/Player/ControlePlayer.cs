@@ -7,10 +7,10 @@ public class ControlePlayer : MonoBehaviour
     private new Rigidbody2D rigidbody;
     private Animator animator;
 
-    private float velocidade {set; get;} = 5f;
+    public float velocidade = 5f;
     public Vector2 direcao;
-    private float raio {set; get;} = 1f;
-    private float angulo {set; get;} = 20f;
+    private float raio = 1f;
+    private float angulo = 60f;
     private LayerMask interacaoLayer;
 
     void Awake()
@@ -21,7 +21,9 @@ public class ControlePlayer : MonoBehaviour
     }
 
     void FixedUpdate(){
-        Mover();
+        if(!GameManager.gameManager.pausado){
+            Mover();
+        }
     }
 
     void Update()
@@ -41,7 +43,8 @@ public class ControlePlayer : MonoBehaviour
     void AtualizarPosicaoInteracao(){
         
         if(Input.GetAxisRaw("Horizontal") != 0 ^ Input.GetAxisRaw("Vertical") != 0){
-            direcao = (transform.up * Input.GetAxisRaw("Vertical")) + (transform.right * Input.GetAxisRaw("Horizontal"));            
+            direcao = (transform.up * Input.GetAxisRaw("Vertical")) + (transform.right * Input.GetAxisRaw("Horizontal"));
+            //transform.rotation = Quaternion.Euler(0, 0, Input.GetAxisRaw("Horizontal") * (-90) + Input.GetAxisRaw("Vertical") * 180);
         
             if(direcao.x < 0){
                 GetComponent<SpriteRenderer>().flipX = true;
@@ -64,13 +67,32 @@ public class ControlePlayer : MonoBehaviour
         Collider2D[] verificaInteragiveis = Physics2D.OverlapCircleAll(transform.position, raio, interacaoLayer);
 
         if(verificaInteragiveis.Length > 0){
+            for (int i = 0; i < verificaInteragiveis.Length; i++){
+                Vector2 direcaoInteragivel = (verificaInteragiveis[i].transform.position - transform.position).normalized;
 
-            Vector2 direcaoInteragivel = (verificaInteragiveis[0].transform.position - transform.position).normalized;
-
-            if(Vector2.Angle(direcao, direcaoInteragivel) == angulo/2){
-
+                if(Vector2.Angle(direcao, direcaoInteragivel) < angulo/2){
+                    verificaInteragiveis[i].SendMessage("Interacao");
+                    break;
+                }
             }
         }
+    }
+
+    void OnDrawGizmos(){
+        Gizmos.color = Color.white;
+        UnityEditor.Handles.DrawWireDisc(transform.position, Vector3.forward, raio);
+
+        Vector3 angulo1 = DirecaoDoAngulo(Vector2.Angle(direcao, transform.up)*(GetComponent<SpriteRenderer>().flipX?-1:1), -angulo/2);
+        Vector3 angulo2 = DirecaoDoAngulo(Vector2.Angle(direcao, transform.up)*(GetComponent<SpriteRenderer>().flipX?-1:1), angulo/2);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawLine(transform.position, transform.position + angulo1 * raio);
+        Gizmos.DrawLine(transform.position, transform.position + angulo2 * raio);
+    }
+
+    Vector2 DirecaoDoAngulo(float eulerY, float anguloEmGraus){
+        anguloEmGraus += eulerY;
+        return new Vector2(Mathf.Sin(anguloEmGraus*Mathf.Deg2Rad), Mathf.Cos(anguloEmGraus*Mathf.Deg2Rad));
     }
 
 }
