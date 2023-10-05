@@ -1,4 +1,4 @@
-# 🎮 Electric RPG
+# 🎮 Electric RPG - Remake (🚧 ainda em desenvolvimento 🚧)
 Este projeto é um remake do jogo Electric RPG, um jogo educacional que desenvolvi durante a faculdade como projeto de Iniciação Científica.
 
 # 🎲 Sobre o jogo original
